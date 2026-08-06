@@ -47,13 +47,42 @@ namespace ExampleCustomSkills
             // these set the values of several values that need to be set again, despite being possible to set in the inspector
             // the reason why these need to be set again is due to the assetBundle importing method creating new instances of objects, which can break things
 
+            // these set the values of two skills for later use
+            PowerHit powerHit = ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit;
+            PowerStinger powerStinger = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger;
+
             // this sets the targetImpactChannel of the skill to be the same as Power Hit's targetImpactChannel
             // if not set, the skill can't be charged up, due to the tool's impactChannel and the skill's impactChannel being different instances
-            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit));
+            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit) // this is CombatImpactChannel
+            );
             // this sets the inputStructure of the skill to be the same as Power Stinger's inputStructure
             // if not set, the changes made to HandOnSideStructure by HandOnSideStructurePatch don't apply, since it's a different HandOnSideStructure instance
             // as this shows, you should set all values that would create a new instance again, even if they wouldn't normally break anything
-            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger));
+            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger) // this is HandOnSideStructure
+            );
+            // this sets the practiceGlyphSprites of the skill to be the first PowerStinger glyph and the second PowerHit glyph
+            // if not set, the practiceGlyphSprites will be different instances
+            typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                new Sprite[2]
+                {
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger))[0], // this is Glyph_Ability_HoldSideBack
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit))[1] // this is Glyph_AbilityHitTrigger
+                }
+            );
+            // this sets the hitPositionEffect of the skill to be the same as PowerHit
+            // if not set, the hitPositionEffect will have different instances within its values
+            typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
+            );
+            // this sets the hitPositionAndBladeAlignedEffect of the skill to be the same as PowerHit
+            // if not set, the hitPositionAndBladeAlignedEffect will have different instances within its values
+            typeof(PickupBasedSkill).GetField("hitPositionAndBladeAlignedEffect", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PickupBasedSkill).GetField("hitPositionAndBladeAlignedEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
+            );
+            // while it's not set again here due to this custom skill not requiring it, you may want to set the Target Achievement again if you set one in the inspector
+            // since different ProfessionSkill extensions can have different values that may need to be set again, I'm not gonna list every value that should be set again here
 
             // this is called to ensure that the dictionary that the custom skill will be added to is actually set up
             ProfessionSkill.CheckItems();
