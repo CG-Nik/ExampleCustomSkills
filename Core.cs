@@ -97,7 +97,8 @@ namespace ExampleCustomSkills
                         break;
                     case "position": // this sets the position of the progression slot in the skill tree
                         // this is relative to a center that the skill tree has
-                        // reasonable values are generally in a range from -1 to 1 on each axis
+                        // I believe that this position is either in world space or the center used by the skill trees is weirdly rotated
+                        // Either way, generally just don't expect the values you have to set to make sense
                         fieldInfo.SetValue(progressionSlot, new Vector3(0, 0, 0));
                         break;
                     case "slotIcon": // this sets the icon of the progression slot
