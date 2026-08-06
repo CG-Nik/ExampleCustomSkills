@@ -43,22 +43,18 @@ namespace ExampleCustomSkills
             ProfessionSkill customSkill = assetBundle.LoadAsset<ProfessionSkill>("Side Power Hit.asset");
             // this is used later for things that need to reference the specific ProfessionSkill extension and not just ProfessionSkill
             PowerHit sidePowerHit = customSkill as PowerHit;
-            // this foreach sets values in the skill object that couldn't be set in the inspector when making the bundle
-            foreach (var fieldInfo in typeof(PowerHit).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                switch (fieldInfo.Name)
-                {
-                    case "targetImpactChannel":
-                        // this gets vanilla PowerHit, then copies its targetImpactChannel onto this custom skill
-                        // the reason why is because the game directly uses == on the targetImpactChannel set in a skill, meaning it needs to be the exact instance
-                        // when an asset bundle is made for a skill, a new instance of targetImpactChannel is made, instead of it being the same instance
-                        PowerHit powerHit = ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit; // this is PowerHit
-                        fieldInfo.SetValue(sidePowerHit, typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit));
-                        break;
-                    default:
-                        break;
-                }
-            }
+
+            // these set the values of several values that need to be set again, despite being possible to set in the inspector
+            // the reason why these need to be set again is due to the assetBundle importing method creating new instances of objects, which can break things
+
+            // this sets the targetImpactChannel of the skill to be the same as Power Hit's targetImpactChannel
+            // if not set, the skill can't be charged up, due to the tool's impactChannel and the skill's impactChannel being different instances
+            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit));
+            // this sets the inputStructure of the skill to be the same as Power Stinger's inputStructure
+            // if not set, the changes made to HandOnSideStructure by HandOnSideStructurePatch don't apply, since it's a different HandOnSideStructure instance
+            // as this shows, you should set all values that would create a new instance again, even if they wouldn't normally break anything
+            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger));
+
             // this is called to ensure that the dictionary that the custom skill will be added to is actually set up
             ProfessionSkill.CheckItems();
             // this gets the dictionary's value so the skill can be added to it
