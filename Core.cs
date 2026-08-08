@@ -25,8 +25,6 @@ namespace ExampleCustomSkills
             // these set up the hooks that CustomSkillsAPI provides
             // the point of the hooks is to ensure that multiple mods can all set their skills up correctly
             CustomSkillsAPI.Core.SetUpProgressionSlots += _SetUpProgressionSlots;
-            CustomSkillsAPI.Core.AddProgressionSlots += _AddProgressionSlots;
-            CustomSkillsAPI.Core.AddInherits += _AddInherits;
         }
 
         // this is where a mod should set up progression slots and profession skills
@@ -84,12 +82,8 @@ namespace ExampleCustomSkills
             // while it's not set again here due to this custom skill not requiring it, you may want to set the Target Achievement again if you set one in the inspector
             // since different ProfessionSkill extensions can have different values that may need to be set again, I'm not gonna list every value that should be set again here
 
-            // this is called to ensure that the dictionary that the custom skill will be added to is actually set up
-            ProfessionSkill.CheckItems();
-            // this gets the dictionary's value so the skill can be added to it
-            Dictionary<uint, ProfessionSkill> items = (Dictionary<uint, ProfessionSkill>)typeof(HashedGeneralValue<ProfessionSkill>).GetField("items", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            // this adds the skill to the dictionary of all skills
-            items.Add(customSkill.Hash, customSkill);
+            // this API function automatically handles adding the ProfessionSkill to the proper dictionary
+            CustomSkillsAPI.Core.RegisterProfessionSkill(customSkill);
             // this creates the ProgressionSlot instance that will have the custom skill
             // a ProgressionSlot is the physical bubble that a skill is on
             ProgressionSlot progressionSlot = new(customSkill);
@@ -153,32 +147,8 @@ namespace ExampleCustomSkills
             }
             // this sets the default values of "hash" and "name", sets up the "indentLevel" field, and sets the skill tree that this skill should be on
             progressionSlot.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
-            // this adds the progression slot to the list of progression slots that _AddProgressionSlots() will add
-            progressionSlots.Add(progressionSlot);
-        }
-
-        // this is where a mod will actually add their set up progression slots to their respective skill trees
-        // this hook should not be modified, you should just copy it from this mod as is
-        private void _AddProgressionSlots()
-        {
-            foreach (ProgressionSlot progressionSlot in progressionSlots)
-            {
-                ProfessionSkillTree professionSkillTree = ProfessionSkillTree.GetProfessionTree(progressionSlot.Path);
-
-                Dictionary<uint, ProgressionSlot> slotMap = (Dictionary<uint, ProgressionSlot>)professionSkillTree.GetType().GetField("slotMap", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(professionSkillTree);
-                slotMap[progressionSlot.Hash] = progressionSlot;
-                professionSkillTree.Slots.Add(progressionSlot);
-            }
-        }
-
-        // this is where a mod will call .AddInherit() on every progression slot they're adding
-        // this hook should not be modified, you should just copy it from this mod as is
-        private void _AddInherits()
-        {
-            foreach (ProgressionSlot progressionSlot in progressionSlots)
-            {
-                progressionSlot.AddInherit(ProfessionSkillTree.GetProfessionTree(progressionSlot.Path));
-            }
+            // this adds the progression slot to the list of progression slots that CustomSkillsAPI will finish adding for you
+            CustomSkillsAPI.Core.progressionSlots.Add(progressionSlot);
         }
     }
 }
