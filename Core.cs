@@ -25,14 +25,18 @@ namespace ExampleCustomSkills
         private void SetUpProgressionSlots()
         {
             // this loads an asset bundle containing a partially set up skill object and the texture for the skill
-            AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "ExampleCustomSkills/AssetBundles/!examplecustomskills"));
+            AssetBundle assetBundle;
+            using (System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ExampleCustomSkills.AssetBundles.!examplecustomskills"))
+            {
+                assetBundle = AssetBundle.LoadFromStream(stream);
+            }
             // this loads the skill from the asset bundle
             // when making the object for this skill, make sure that the hash you set is between 1-65535, otherwise the skill will have bugs
             // also, try to ensure that your hash is unique from any vanilla and modded hashes
             // you also need to take note of any values that you set in the inspector that reference objects from the base game, and set those to None, then instead set them in C#
-                // the reasoning behind this is because the game doesn't maintain that reference, so it creates an entirely new instance of that object
-                // in order to prevent it from USING the new instance, it sets the field to the correct object, but to prevent creating the object to begin with, you need to not reference the object in the inspector
-                // do note, you CAN safely reference objects from the same asset bundle
+            // the reasoning behind this is because the game doesn't maintain that reference, so it creates an entirely new instance of that object
+            // in order to prevent it from USING the new instance, it sets the field to the correct object, but to prevent creating the object to begin with, you need to not reference the object in the inspector
+            // do note, you CAN safely reference objects from the same asset bundle
             ProfessionSkill customSkill = assetBundle.LoadAsset<ProfessionSkill>("Side Power Hit Example.asset");
             // this is used for most references to the skill, as this allows things that need references to the ProfessionSkill, the PickupBasedSkill, and the PowerHit to work
             PowerHit sidePowerHit = customSkill as PowerHit;

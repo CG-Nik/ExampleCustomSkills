@@ -13,6 +13,9 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="AssetBundles\!examplecustomskills" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="Accessibility">
@@ -674,7 +677,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="AssetBundles\" />
+	  <EmbeddedResource Include="AssetBundles\!examplecustomskills" />
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
